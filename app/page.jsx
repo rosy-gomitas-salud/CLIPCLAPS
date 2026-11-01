@@ -7,7 +7,12 @@ const clips = [
  {id:3,tag:"INSPIRACIÓN",title:"Persigue eso que te mueve",creator:"@motiva_hoy",views:"12.6 mil",coins:10,color:"pink",src:"https://videos.pexels.com/video-files/3195394/3195394-hd_1080_1920_25fps.mp4",desc:"Cada paso cuenta. Sigue avanzando."}
 ];
 export default function Home(){
- const [active,setActive]=useState(0),[coins,setCoins]=useState(120),[claimed,setClaimed]=useState([]),[tab,setTab]=useState("Para ti"),[showWallet,setShowWallet]=useState(false),[liked,setLiked]=useState([]);
+ const [active,setActive]=useState(0),[coins,setCoins]=useState(120),[claimed,setClaimed]=useState([]),[tab,setTab]=useState("Para ti"),[showWallet,setShowWallet]=useState(false),[liked,setLiked]=useState([]),[referralNotice,setReferralNotice]=useState("");
+ const referralCode="CLIPJ2026";
+ const referralCommission=10;
+ const referralCount=0;
+ const referralEarnings=referralCount*referralCommission;
+ const shareReferral=async()=>{const link=`${window.location.origin}/?ref=${referralCode}`;try{await navigator.clipboard.writeText(link);setReferralNotice("¡Enlace de invitación copiado!")}catch{setReferralNotice(link)}};
  const clip=clips[active];
  const earned=claimed.reduce((n,id)=>n+(clips.find(c=>c.id===id)?.coins||0),0);
  const claim=()=>{if(!claimed.includes(clip.id)){setClaimed([...claimed,clip.id]);setCoins(coins+clip.coins)}};
@@ -20,7 +25,7 @@ export default function Home(){
    {["⌂|Inicio","▣|Explorar","◉|Recompensas","▤|Mi actividad"].map(x=><button key={x} className={"navItem "+(x.startsWith("⌂")?"selected":"")} onClick={()=>x.includes("Recompensas")?setShowWallet(true):setTab(x.split("|")[1])}><span>{x.split("|")[0]}</span>{x.split("|")[1]}</button>)}
    <div className="sideLabel communityLabel">TU ESPACIO</div>
    <button className="navItem" onClick={()=>setShowWallet(true)}><span>◈</span>Mi billetera</button>
-   <button className="navItem" onClick={()=>setTab("Siguiendo")}><span>♡</span>Siguiendo</button>
+   <button className="navItem" onClick={()=>setTab("Siguiendo")}><span>♡</span>Siguiendo</button>\n   <button className={"navItem "+(tab==="Referidos"?"selected":"")} onClick={()=>setTab("Referidos")}><span>♧</span>Invita y gana</button>
    <div className="sidebarPromo"><div className="spark">✦</div><b>¡Cada clip cuenta!</b><p>Disfruta contenido y descubre nuevas recompensas.</p><button onClick={()=>setShowWallet(true)}>Ver mis puntos <span>→</span></button></div>
    <div className="profileMini"><div className="avatar">J</div><div><b>Invitado</b><small>Cuenta de prueba</small></div><span className="dots">•••</span></div>
   </aside>
@@ -29,7 +34,7 @@ export default function Home(){
    <div className="content">
     <div className="welcome"><div><div className="eyebrow">TU MOMENTO, TU RECOMPENSA <span>✦</span></div><h1>Descubre. Disfruta.<em> Gana.</em></h1><p>Tu próximo video favorito está a un scroll de distancia.</p></div><div className="welcomeBadge"><span>✦</span><div><b>CLIPCLAPS</b><small>Una nueva forma de disfrutar</small></div></div></div>
     <div className="feedHeader"><div className="tabs">{["Para ti","Tendencias","Nuevos"].map(t=><button onClick={()=>setTab(t)} className={tab===t?"tab activeTab":"tab"} key={t}>{t}</button>)}</div><button className="filterBtn">☷ <span>Filtrar</span></button></div>
-    <div className="feedLayout">
+    {tab==="Referidos"?<section className="referralPage"><div className="referralHero"><div className="eyebrow">CRECE CON CLIPCLAPS</div><h2>Invita amigos. <em>Gana monedas.</em></h2><p>Comparte tu enlace personal. Cuando una persona nueva se registre correctamente con tu invitación, recibirás una comisión fija.</p><div className="referralReward"><b>+{referralCommission}</b><span>MONEDAS POR CADA REGISTRO VÁLIDO</span></div><button className="claimBtn referralShare" onClick={shareReferral}>↗ Compartir mi invitación</button>{referralNotice&&<div className="referralNotice">{referralNotice}</div>}</div><div className="referralMetrics"><div><span>Personas invitadas</span><b>{referralCount}</b></div><div><span>Comisiones acumuladas</span><b>{referralEarnings} <small>monedas</small></b></div><div><span>Comisión por referido</span><b>{referralCommission} <small>monedas</small></b></div></div><div className="referralInfo"><h3>Tu código de invitación</h3><div className="referralCode"><strong>{referralCode}</strong><button onClick={()=>{navigator.clipboard?.writeText(referralCode);setReferralNotice("Código copiado.")}}>Copiar código</button></div><p>La comisión se acredita una sola vez por cada cuenta nueva que complete el registro y supere las validaciones. No se permiten autorreferidos ni cuentas duplicadas.</p><small>MODO DEMO · Las comisiones son monedas de prueba, no dinero real ni canjeable todavía.</small></div></section>:<div className="feedLayout">
      <div className="videoStage">
       <div className="clipMeta"><span className="tag">{clip.tag}</span><span className="clipCount">{String(active+1).padStart(2,"0")} / 03</span></div>
       <div className={"videoFrame "+clip.color}>
