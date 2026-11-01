@@ -2,7 +2,18 @@
   "name": "clipclaps",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
-  "dependencies": { "next": "15.5.6", "pg": "8.16.3", "qrcode.react": "4.2.0", "react": "19.1.1", "react-dom": "19.1.1" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.850.0",
+    "next": "15.5.6",
+    "pg": "8.16.3",
+    "qrcode.react": "4.2.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
   "devDependencies": {}
 }
