@@ -53,6 +53,7 @@ export default function Home(){
       <div className="tip"><span>✧</span><p><b>Consejo del día</b> Explora nuevas categorías para descubrir contenido que te encante.</p></div>
      </aside>
     </div>
+    }
     <footer>© 2026 CLIPCLAPS <span>•</span> Plataforma en fase de prueba <span>•</span> <a href="#">Términos</a> <a href="#">Privacidad</a></footer>
    </div>
   </section>
