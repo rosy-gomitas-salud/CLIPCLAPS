@@ -4,11 +4,12 @@ import { getUser } from "@/lib/auth";
 export const runtime="nodejs";
 export async function GET(request){
  const user=await getUser(request);if(!user)return NextResponse.json({error:"Inicia sesión."},{status:401});
- const [b,h]=await Promise.all([
+ const [b,p,h]=await Promise.all([
   db().query("SELECT COALESCE(sum(amount_pennies),0)::int AS balance FROM cash_ledger WHERE user_id=$1",[user.id]),
+  db().query("SELECT COALESCE(sum(amount_pennies),0)::int AS reserved FROM withdrawal_requests WHERE user_id=$1 AND status IN ('pending','approved')",[user.id]),
   db().query("SELECT id,amount_pennies,bank_name,account_type,status,admin_note,created_at,reviewed_at,paid_at FROM withdrawal_requests WHERE user_id=$1 ORDER BY created_at DESC LIMIT 30",[user.id])
  ]);
- return NextResponse.json({balancePennies:b.rows[0].balance,withdrawals:h.rows});
+ return NextResponse.json({balancePennies:Math.max(0,b.rows[0].balance-p.rows[0].reserved),withdrawals:h.rows});
 }
 export async function POST(request){
  const user=await getUser(request);if(!user)return NextResponse.json({error:"Inicia sesión."},{status:401});
@@ -20,7 +21,8 @@ export async function POST(request){
   const c=await db().connect();
   try{
    await c.query("BEGIN");
-   const bal=await c.query("SELECT COALESCE(sum(amount_pennies),0)::int AS balance FROM cash_ledger WHERE user_id=$1 FOR UPDATE",[user.id]);
+   await c.query("SELECT pg_advisory_xact_lock(hashtext($1))",[String(user.id)]);
+   const bal=await c.query("SELECT COALESCE(sum(amount_pennies),0)::int AS balance FROM cash_ledger WHERE user_id=$1",[user.id]);
    if(bal.rows[0].balance<amount){await c.query("ROLLBACK");return NextResponse.json({error:"Tu saldo disponible en soles no alcanza para este retiro."},{status:400});}
    const pending=await c.query("SELECT COALESCE(sum(amount_pennies),0)::int AS amount FROM withdrawal_requests WHERE user_id=$1 AND status IN ('pending','approved')",[user.id]);
    if(bal.rows[0].balance-pending.rows[0].amount<amount){await c.query("ROLLBACK");return NextResponse.json({error:"Ya tienes retiros pendientes que reservan parte de tu saldo."},{status:409});}
